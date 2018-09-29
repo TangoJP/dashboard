@@ -7,6 +7,9 @@ def create_random_quartile(length):
     quartiles = [random.choice(choices) for _ in range(length)]
     return pd.Series(quartiles)
 
+def calculate_percent_return(prices, period):
+    returns = 100*(prices.shift(-1*period)/prices)-100
+    return returns
 
 class Slice:
     def __init__(self, df, value_slice={}, range_slice={}):

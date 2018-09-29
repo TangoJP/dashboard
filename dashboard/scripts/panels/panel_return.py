@@ -7,7 +7,7 @@ from bokeh.models import ColumnDataSource, Panel, HoverTool
 from bokeh.palettes import Category10_10
 from dashboard.scripts.widgets import create_widget
 from dashboard.scripts.plot import plot_histogram
-from dashboard.scripts.utility import Slice
+from dashboard.scripts.utility import Slice, calculate_percent_return
 
 with open('dashboard/scripts/json/widgets.json') as json_widgets:
     widget_settings = json.load(json_widgets)
@@ -17,27 +17,30 @@ settings_figure = {
     'plot_width': 500, 
     'plot_height': 500, 
     'title': 'Test Hitogram',
-    'x_axis_label': 'Return', 
+    'x_axis_label': 'Return (%)', 
     'y_axis_label': 'Proportion'
 }
 
 def panel_return(data):
 
     def get_data():
-        name_column_period = selector_test.value
+        #name_column_period = selector_test.value
+        period = selector_period.value
         name_column_quantile = \
             selector_quantile.labels[selector_quantile.active]
         unique_quantiles = data[name_column_quantile].unique()
         bins = int(selector_bins.value)
         
+        data['return'] = calculate_percent_return(data['close'], period)
+        print(data.head())
 
         by_quantile = pd.DataFrame(
             columns=['proportion', 'left', 'right', 'name', 'color']
         )
 
         for i, quantile in enumerate(sorted(unique_quantiles)):
-            subset = data[data[name_column_quantile] == quantile]
-            hist, edges = np.histogram(subset[name_column_period], bins=bins)
+            subset = data[data[name_column_quantile] == quantile].dropna()
+            hist, edges = np.histogram(subset['return'], bins=bins)
             sub_df = pd.DataFrame(
                 {
                     'proportion': hist / np.sum(hist),
@@ -80,7 +83,7 @@ def panel_return(data):
         source_updated = get_data()
         source.data = source_updated.data
 
-    selector_test = create_widget(widget_settings['test'])
+    #selector_test = create_widget(widget_settings['test'])
     selector_period = create_widget(widget_settings['period'])
     selectort_metric = create_widget(widget_settings['metric'])
     selector_quantile = create_widget(widget_settings['quantile'])
@@ -96,7 +99,7 @@ def panel_return(data):
     ### Setting up the laytou ###
     # Widgets
     controlers = WidgetBox(
-        selector_test,
+        #selector_test,
         selector_period,
         selectort_metric,
         selector_quantile,

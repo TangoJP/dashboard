@@ -1,18 +1,5 @@
 {
     "panel_return": {
-        "test": {
-            "type": "Select",
-            "specs": {
-                "title": "Return Period",
-                "value": "close",
-                "options": [
-                    "open",
-                    "high",
-                    "low",
-                    "close"
-                ]
-            }
-        },
         "period": {
             "type": "Slider",
             "specs": {
@@ -51,6 +38,16 @@
                 "end": 100,
                 "step": 5,
                 "value": 20
+            }
+        },
+        "xrange": {
+            "type": "RangeSlider",
+            "specs": {
+                "title": "X-axis Range",
+                "start": -10,
+                "end": 10,
+                "step": 1,
+                "value": [-5, 5]
             }
         }
     }

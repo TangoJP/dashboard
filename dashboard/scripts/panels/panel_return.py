@@ -24,7 +24,6 @@ settings_figure = {
 def panel_return(data):
 
     def get_data():
-        #name_column_period = selector_test.value
         period = selector_period.value
         name_column_quantile = \
             selector_quantile.labels[selector_quantile.active]
@@ -65,6 +64,7 @@ def panel_return(data):
             x_axis_label=settings_figure['x_axis_label'], 
             y_axis_label=settings_figure['y_axis_label']
         )
+        update_axes(p)
 
         p.quad(
             source=source, bottom=0, top='proportion', 
@@ -82,28 +82,39 @@ def panel_return(data):
     def update():
         source_updated = get_data()
         source.data = source_updated.data
+        
 
-    #selector_test = create_widget(widget_settings['test'])
+    def update_axes(p):
+        choice_xrange = selector_xrange.value
+        p.x_range.start = choice_xrange[0]
+        p.x_range.end = choice_xrange[1]
+
+        # choice_yrange = slider_yrange.value
+        # p.y_range.start = choice_yrange[0]
+        # p.y_range.end = choice_yrange[1]
+
     selector_period = create_widget(widget_settings['period'])
     selectort_metric = create_widget(widget_settings['metric'])
     selector_quantile = create_widget(widget_settings['quantile'])
     selector_bins = create_widget(widget_settings['bins'])
+    selector_xrange = create_widget(widget_settings['xrange'])
 
     selector_period.on_change('value', lambda attr, old, new: update())
     selector_quantile.on_change('active', lambda attr, old, new: update())
     selector_bins.on_change('value', lambda attr, old, new: update())
-    
+    selector_xrange.on_change('value', lambda attr, old, new: update_axes())
+
     source = get_data()
     p = draw(source)
 
     ### Setting up the laytou ###
     # Widgets
     controlers = WidgetBox(
-        #selector_test,
         selector_period,
         selectort_metric,
         selector_quantile,
         selector_bins,
+        selector_xrange,
         width=350
     )
 

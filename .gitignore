@@ -1,3 +1,4 @@
+dashboard/data/fx/*
 __pycache__/
 __pycache__/*
 *.pyc

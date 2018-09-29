@@ -1,0 +1,57 @@
+{
+    "panel_return": {
+        "test": {
+            "type": "Select",
+            "specs": {
+                "title": "Return Period",
+                "value": "close",
+                "options": [
+                    "open",
+                    "high",
+                    "low",
+                    "close"
+                ]
+            }
+        },
+        "period": {
+            "type": "Slider",
+            "specs": {
+                "title": "Return Period",
+                "start": 1,
+                "end": 24,
+                "step": 1,
+                "value": 1
+            }
+        },
+        "metric": {
+            "type": "Select",
+            "specs": {
+                "title": "Metric",
+                "value": "MACD",
+                "options": [
+                    "MACD",
+                    "RSI",
+                    "Bollinger Deviation",
+                    "CCI"
+                ]
+            }
+        },
+        "quantile": {
+            "type": "RadioButtonGroup",
+            "specs": {
+                "labels": ["test_quartile", "Percentile"],
+                "active": 0
+            }
+        },
+        "bins": {
+            "type": "Slider",
+            "specs": {
+                "title": "bins",
+                "start": 5,
+                "end": 100,
+                "step": 5,
+                "value": 20
+            }
+        }
+    }
+}

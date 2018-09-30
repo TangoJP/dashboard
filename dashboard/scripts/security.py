@@ -149,10 +149,27 @@ class Security(CoreSecurity):
         self.data[label_stem + 'lower_3sigma'] = \
                     self.data[sma_name] - 3*self.data[label_stem + 'sigma']
 
+        if 'BollingerBands' not in self.analyses:
+            self.analyses.append('BollingerBands')
+        
         return
 
-    def add_BollingerMetrics(self, bollinger_period=20):
-        pass
+    def add_BollingeDeviations(self, bollinger_period=20):
+        """
+        Calculate deviation from SMA and absolute distance from Bollinger bands, 
+        using bollinger numbers
+        """
+        if 'BollingerBands' not in self.analyses:
+            self.add_BollingerBands(bollinger_period=bollinger_period)
+
+        sma_name = 'SMA' + str(bollinger_period)
+        bollinger_stem = 'Bollinger' + str(bollinger_period) + '_'
+        self.data['SMA_Deviation_Sigma'] = \
+                (self.data['close'] - self.data[sma_name])\
+                .divide(self.data[bollinger_stem + 'sigma'])
+        self.data['SMA_Deviation_Abs'] = self.data['close'] - self.data[sma_name]
+
+        return
 
     def add_MACD(self, period_short=12, period_long=26, period_ave=9):
         if not self.EMA_periods:

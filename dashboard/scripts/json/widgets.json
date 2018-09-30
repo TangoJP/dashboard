@@ -69,7 +69,10 @@
                 "options": [
                     "MACD",
                     "MACD_signal",
-                    "RSI"
+                    "RSI",
+                    "Bollinger20_sigma",
+                    "SMA_Deviation_Sigma",
+                    "SMA_Deviation_Abs"
                 ]
             }
         },
@@ -81,7 +84,60 @@
                 "options": [
                     "MACD",
                     "MACD_signal",
-                    "RSI"
+                    "RSI",
+                    "Bollinger20_sigma",
+                    "SMA_Deviation_Sigma",
+                    "SMA_Deviation_Abs"
+                ]
+            }
+        },
+        "xrange": {
+            "type": "RangeSlider",
+            "specs": {
+                "title": "X-axis Range",
+                "start": -20,
+                "end": 20,
+                "step": 1,
+                "value": [-10, 10]
+            }
+        },
+        "yrange": {
+            "type": "RangeSlider",
+            "specs": {
+                "title": "X-axis Range",
+                "start": -20,
+                "end": 20,
+                "step": 1,
+                "value": [-10, 10]
+            }
+        }
+    },
+    "panel_metric_histogram": {
+        "return_period": {
+            "type": "Slider",
+            "specs": {
+                "title": "Return Period",
+                "start": 1,
+                "end": 30,
+                "step": 1,
+                "value": 1
+            }
+        },
+        "return_quantile":{
+
+        },
+        "metric": {
+            "type": "Select",
+            "specs": {
+                "title": "X-Metric",
+                "value": "MACD",
+                "options": [
+                    "MACD",
+                    "MACD_signal",
+                    "RSI",
+                    "Bollinger20_sigma",
+                    "SMA_Deviation_Sigma",
+                    "SMA_Deviation_Abs"
                 ]
             }
         },

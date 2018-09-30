@@ -84,13 +84,19 @@ def create_test_data(data):
     print('  Adding MACD signal Decile...')
     security.data['MACD_signal_Decile'] = \
                         digitize2deciles(security.data['MACD_signal'])
-
+    
     print('Adding RSI...')
     security.add_RSI(rsi_period=14)
     print('  Adding RSI quartiles...')
     security.data['RSI_Quartile'] = digitize2quartiles(security.data['RSI'])
     print('  Adding RSI Decile...')
     security.data['RSI_Decile'] = digitize2deciles(security.data['RSI'])
+
+    print('Adding Bollinger Bands...')
+    security.add_BollingerBands(bollinger_period=20)
+    
+    print('Adding Deviation Metrics...')
+    security.add_BollingeDeviations(bollinger_period=20)
 
     return security.data
 

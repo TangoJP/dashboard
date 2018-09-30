@@ -48,17 +48,18 @@ def panel_return_scatter(data):
             }
         )
 
-        
         return ColumnDataSource(df.dropna())
 
     def draw(source):
         # update_axes(p)
+        # bins = 20
 
         mapper = LinearColorMapper(
             palette=all_palettes['RdBu'][len(source.data)], 
             low=-2.5,#np.nanmin(source.data['return']), 
             high=2.5#np.nanmax(source.data['return'])
         )
+
         p.circle(
             source=source, 
             x='x', 
@@ -69,13 +70,12 @@ def panel_return_scatter(data):
             size=8,
             hover_fill_alpha=1.0
         )
-
-        #hover = HoverTool(tooltips=[('Quantile', '@name')],mode='vline')
-
         color_bar = ColorBar(color_mapper=mapper, location=(0, 0))
-        
-        #p.add_tools(hover)
         p.add_layout(color_bar, 'right')
+
+        # x_his, x_edges = np.histogram(source.data['x'], bins=bins)
+        # y_his, y_edges = np.histogram(source.data['y'], bins=bins)
+        
 
         return column(p_hist_top, row(p, p_hist_right))
 
@@ -85,27 +85,14 @@ def panel_return_scatter(data):
 
         p.xaxis.axis_label = selector_xmetric.value
         p.yaxis.axis_label = selector_ymetric.value
-        
-    # def update_axes(p):
-    #     choice_xrange = selector_xrange.value
-    #     p.x_range.start = choice_xrange[0]
-    #     p.x_range.end = choice_xrange[1]
-
-    #     choice_yrange = selector_yrange.value
-    #     p.y_range.start = choice_yrange[0]
-    #     p.y_range.end = choice_yrange[1]
 
     selector_period = create_widget(widget_settings['return_period'])
     selector_xmetric = create_widget(widget_settings['xmetric'])
     selector_ymetric = create_widget(widget_settings['ymetric'])
-    selector_xrange = create_widget(widget_settings['xrange'])
-    selector_yrange = create_widget(widget_settings['yrange'])
 
     selector_period.on_change('value', lambda attr, old, new: update())
     selector_xmetric.on_change('value', lambda attr, old, new: update())
     selector_ymetric.on_change('value', lambda attr, old, new: update())
-    #selector_xrange.on_change('value', lambda attr, old, new: update_axes(p))
-    #selector_yrange.on_change('value', lambda attr, old, new: update_axes(p))
 
     source = update_data()
     p_column = draw(source)

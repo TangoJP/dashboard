@@ -12,10 +12,6 @@ from dashboard.scripts.utility import (
 TEST_DATAPATH = 'dashboard/data/test_day.csv'
 test_data = pd.read_csv(TEST_DATAPATH)
 test_data['time'] = pd.to_datetime(test_data['time'], infer_datetime_format=True)
-#test_data['test_quartile'] = create_random_quartile(len(test_data))
-
-# print(test_data['RSI'].min())
-# print(test_data['RSI'].max())
 
 ### Create tabs ###
 tab1 = panel_return_histogram(test_data)

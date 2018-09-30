@@ -139,17 +139,20 @@ class Security(CoreSecurity):
         sma_name = 'SMA' + str(bollinger_period)
         label_stem = 'Bollinger' + str(bollinger_period) + '_'
         self.data[label_stem + 'sigma'] = \
-                    self.data['close'].rolling(window=bollinger_period).std()
+                    self.data[sma_name].rolling(window=bollinger_period).std()
         self.data[label_stem + 'upper_2sigma'] = \
-                    self.data['close'] + 2*self.data[label_stem + 'sigma']
+                    self.data[sma_name] + 2*self.data[label_stem + 'sigma']
         self.data[label_stem + 'upper_3sigma'] = \
-                    self.data['close'] + 3*self.data[label_stem + 'sigma']
+                    self.data[sma_name] + 3*self.data[label_stem + 'sigma']
         self.data[label_stem + 'lower_2sigma'] = \
-                    self.data['close'] - 2*self.data[label_stem + 'sigma']
+                    self.data[sma_name] - 2*self.data[label_stem + 'sigma']
         self.data[label_stem + 'lower_3sigma'] = \
-                    self.data['close'] - 3*self.data[label_stem + 'sigma']
+                    self.data[sma_name] - 3*self.data[label_stem + 'sigma']
 
         return
+
+    def add_BollingerMetrics(self, bollinger_period=20):
+        pass
 
     def add_MACD(self, period_short=12, period_long=26, period_ave=9):
         if not self.EMA_periods:

@@ -103,9 +103,7 @@ def create_random_quartile(length):
     quartiles = [random.choice(choices) for _ in range(length)]
     return pd.Series(quartiles)
 
-# def create_decile_color(series, num_colors=10):
-#     colors = viridis(num_colors)
-#     series_deciles = digitize2deciles(series)
+
 
 
 class Slice:

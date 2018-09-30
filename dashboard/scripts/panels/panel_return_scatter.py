@@ -23,6 +23,18 @@ settings_figure = {
 }
 
 def panel_return_scatter(data):
+    ### Create a figure ###
+    p = figure(
+        plot_width=settings_figure['plot_width'], 
+        plot_height=settings_figure['plot_height'], 
+        title=settings_figure['title'],
+        toolbar_location="below"
+    )
+    p.background_fill_color = 'aliceblue'
+    p.background_fill_alpha = 0.4
+
+    p_hist_top = figure(plot_width=600, plot_height=100)
+    p_hist_right = figure(plot_width=100, plot_height=600)
 
     def update_data():
         period = selector_period.value
@@ -36,34 +48,17 @@ def panel_return_scatter(data):
             }
         )
 
+        
         return ColumnDataSource(df.dropna())
 
     def draw(source):
-        ### Create a figure ###
-        p = figure(
-            plot_width=settings_figure['plot_width'], 
-            plot_height=settings_figure['plot_height'], 
-            title=settings_figure['title'],
-            x_axis_label=settings_figure['x_axis_label'], 
-            y_axis_label=settings_figure['y_axis_label'],
-            toolbar_location="below"
-        )
-        p.background_fill_color = 'aliceblue'
-        p.background_fill_alpha = 0.4
-        #update_axes(p)
-        
-        p.xaxis.axis_label = selector_xmetric.value
-        p.yaxis.axis_label = selector_ymetric.value
-
-        p_hist_top = figure(plot_width=600, plot_height=100)
-        p_hist_right = figure(plot_width=100, plot_height=600)
+        # update_axes(p)
 
         mapper = LinearColorMapper(
             palette=all_palettes['RdBu'][len(source.data)], 
             low=-2.5,#np.nanmin(source.data['return']), 
             high=2.5#np.nanmax(source.data['return'])
         )
-
         p.circle(
             source=source, 
             x='x', 
@@ -87,6 +82,9 @@ def panel_return_scatter(data):
     def update():
         source_updated = update_data()
         source.data = source_updated.data
+
+        p.xaxis.axis_label = selector_xmetric.value
+        p.yaxis.axis_label = selector_ymetric.value
         
     # def update_axes(p):
     #     choice_xrange = selector_xrange.value

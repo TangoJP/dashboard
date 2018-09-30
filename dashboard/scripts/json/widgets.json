@@ -1,11 +1,11 @@
 {
-    "panel_return": {
+    "panel_return_histogram": {
         "period": {
             "type": "Slider",
             "specs": {
                 "title": "Return Period",
                 "start": 1,
-                "end": 24,
+                "end": 30,
                 "step": 1,
                 "value": 1
             }
@@ -17,16 +17,15 @@
                 "value": "MACD",
                 "options": [
                     "MACD",
-                    "RSI",
-                    "Bollinger Deviation",
-                    "CCI"
+                    "MACD_signal",
+                    "RSI"
                 ]
             }
         },
         "quantile": {
             "type": "RadioButtonGroup",
             "specs": {
-                "labels": ["test_quartile", "Percentile"],
+                "labels": ["Quartile", "Decile"],
                 "active": 0
             }
         },
@@ -44,10 +43,66 @@
             "type": "RangeSlider",
             "specs": {
                 "title": "X-axis Range",
-                "start": -10,
-                "end": 10,
+                "start": -20,
+                "end": 20,
                 "step": 1,
-                "value": [-5, 5]
+                "value": [-10, 10]
+            }
+        }
+    },
+    "panel_return_scatter": {
+        "return_period": {
+            "type": "Slider",
+            "specs": {
+                "title": "Return Period",
+                "start": 1,
+                "end": 30,
+                "step": 1,
+                "value": 1
+            }
+        },
+        "xmetric": {
+            "type": "Select",
+            "specs": {
+                "title": "X-Metric",
+                "value": "MACD",
+                "options": [
+                    "MACD",
+                    "MACD_signal",
+                    "RSI"
+                ]
+            }
+        },
+        "ymetric": {
+            "type": "Select",
+            "specs": {
+                "title": "Y-Metric",
+                "value": "MACD",
+                "options": [
+                    "MACD",
+                    "MACD_signal",
+                    "RSI"
+                ]
+            }
+        },
+        "xrange": {
+            "type": "RangeSlider",
+            "specs": {
+                "title": "X-axis Range",
+                "start": -20,
+                "end": 20,
+                "step": 1,
+                "value": [-10, 10]
+            }
+        },
+        "yrange": {
+            "type": "RangeSlider",
+            "specs": {
+                "title": "X-axis Range",
+                "start": -20,
+                "end": 20,
+                "step": 1,
+                "value": [-10, 10]
             }
         }
     }

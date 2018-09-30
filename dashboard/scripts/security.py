@@ -1,0 +1,240 @@
+import numpy as np
+import pandas as pd
+import math
+import matplotlib.pyplot as plt
+#from matplotlib.finance import candlestick2_ohlc
+from bokeh.layouts import gridplot
+from bokeh.models import Arrow, OpenHead, NormalHead, VeeHead
+from bokeh.plotting import figure, show, output_file
+from bokeh.io import output_notebook
+# from bokeh.palettes import Colorblind as default_palette
+
+class CoreSecurity:
+    def __init__(self, data):
+        if not isinstance(data, pd.DataFrame):
+            raise TypeError('\'data\' must be a DataFrame object')
+        self.data = data
+        self.data.rename({col:col.lower() for col in self.data.columns})
+        self.columns = self.data.columns
+
+        if 'open' not in self.columns:
+            raise KeyError('\'open\' column missing.')
+        if 'high' not in self.columns:
+            raise KeyError('\'high\' column missing.')
+        if 'low' not in self.columns:
+            raise KeyError('\'low\' column missing.')
+        if 'close' not in self.columns:
+            raise KeyError('\'close\' column missing.')
+
+
+class Security(CoreSecurity):
+    def __init__(self, data):
+        super().__init__(data)
+        self.return_periods = []
+        self.return_labels = {'trailing': [], 'forward': []}
+        self.analyses = []
+        self.indicator_columns = []
+
+        self.EMA_periods = None
+
+    def add_returns(self, periods):
+        if all(isinstance(n, int) for n in periods):
+            self.return_periods = self.return_periods + periods
+        else:
+            '''Raise Exception'''
+            print('Periods must be a list of integers')
+            return
+
+        # Create trailing and forward returns for each period
+        for period in periods:
+            key = '+%d-periods return' % period
+            self.data[key] = \
+                100*(self.data['close'].shift(-1*period)/self.data['close'])-100
+
+        return
+
+    def add_SMA(self, periods):
+        self.SMA_periods = periods
+        self.SMA_labels = []
+        for period in periods:
+            sma_name = 'SMA' + str(period)
+            self.SMA_labels.append(sma_name)
+            self.data[sma_name] = \
+                    self.data['close'].rolling(window=period).mean()
+        if 'SMA' not in self.analyses:
+            self.analyses.append('SMA')
+        return
+
+    def add_EMA(self, periods):
+        self.EMA_periods = periods
+        self.EMA_labels = []
+        for period in periods:
+            ema_name = 'EMA' + str(period)
+            self.EMA_labels.append(ema_name)
+            self.data[ema_name] = \
+                    self.data['close'].ewm(span=period).mean()
+        if 'EMA' not in self.analyses:
+            self.analyses.append('EMA')
+        return
+
+    def add_MACrosses(self, cross_periods, kind='SMA'):
+        if not any(analysis in self.analyses for analysis in ['SMA', 'EMA']):
+            print('ERROR: Please add moving averages first')
+            return
+
+        if len(cross_periods) != 2:
+            print('Error: Only two moving averages can be compared at a time')
+            return
+
+        if kind == 'SMA':
+            all_periods = self.SMA_periods
+        else:
+            all_periods = self.EMA_periods
+        if not all(period in all_periods for period in cross_periods):
+            print('ERROR: Not all required columns in the file')
+            return
+
+        short_period = min(cross_periods)
+        long_period = max(cross_periods)
+        if kind == 'EMA':
+            short_label = 'EMA' + str(short_period)
+            long_label = 'EMA' + str(long_period)
+            cross_label = 'EMA' + str(short_period) + '_'\
+                                + str(long_period) + '_crosses'
+            diff_label = 'EMA' + str(short_period) + '_'\
+                               + str(long_period) + '_difference'
+        elif kind == 'SMA':
+            short_label = 'SMA' + str(short_period)
+            long_label = 'SMA' + str(long_period)
+            cross_label = 'SMA' + str(short_period) + '_' + str(long_period)
+            cross_label = 'SMA' + str(short_period) + '_'\
+                                + str(long_period) + '_crosses'
+            diff_label = 'SMA' + str(short_period) + '_'\
+                               + str(long_period) + '_difference'
+        else:
+            print("Kind must be 'SMA' or 'EMA'")
+            return
+
+        self.data[diff_label] = \
+                        self.data[short_label] - self.data[long_label]
+        self.data[cross_label] = 0
+        for i in range(1, len(self.data)):
+            diff_0 = self.data.loc[self.data.index[i-1], diff_label]
+            diff_1 = self.data.loc[self.data.index[i], diff_label]
+            if (diff_0 < 0) and (diff_1 > 0):    # when shorter > longer happens
+                self.data.loc[self.data.index[i], cross_label] = 1
+            elif (diff_0 > 0) and (diff_1 < 0):
+                self.data.loc[self.data.index[i], cross_label] = -1
+
+        self.analyses.append(kind+'MACrosses')
+        self.indicator_columns.append(cross_label)
+        return
+
+    def add_BollingerBands(self, bollinger_period=20):
+        if ('SMA' not in self.analyses) or \
+                            (bollinger_period not in self.SMA_periods):
+            self.add_SMA(periods=[bollinger_period])
+
+        self.bollinger_period = bollinger_period
+        sma_name = 'SMA' + str(bollinger_period)
+        label_stem = 'Bollinger' + str(bollinger_period) + '_'
+        self.data[label_stem + 'sigma'] = \
+                    self.data['close'].rolling(window=bollinger_period).std()
+        self.data[label_stem + 'upper_2sigma'] = \
+                    self.data['close'] + 2*self.data[label_stem + 'sigma']
+        self.data[label_stem + 'upper_3sigma'] = \
+                    self.data['close'] + 3*self.data[label_stem + 'sigma']
+        self.data[label_stem + 'lower_2sigma'] = \
+                    self.data['close'] - 2*self.data[label_stem + 'sigma']
+        self.data[label_stem + 'lower_3sigma'] = \
+                    self.data['close'] - 3*self.data[label_stem + 'sigma']
+
+        return
+
+    def add_MACD(self, period_short=12, period_long=26, period_ave=9):
+        if not self.EMA_periods:
+            ema_periods_to_add = [period_short, period_long, period_ave]
+        else:
+            ema_periods_to_add = [
+                p for p in [period_short, period_long, period_ave]
+                if p not in self.EMA_periods
+            ]
+
+        if ema_periods_to_add != []:
+            self.add_EMA(ema_periods_to_add)
+
+        name_short = 'EMA' + str(period_short)
+        name_long =  'EMA' + str(period_long)
+        self.data.loc[:, 'MACD'] = self.data[name_short] - self.data[name_long]
+        self.data.loc[:, 'MACD_signal'] = \
+                                self.data['MACD'].ewm(span=period_ave).mean()
+        self.data.loc[:, 'MACD_histogram'] = \
+                                self.data['MACD'] - self.data['MACD_signal']
+
+        self.data['MACD_cross'] = 0
+        for i in range(1, len(self.data)):
+            diff_0 = self.data.loc[self.data.index[i-1], 'MACD_histogram']
+            diff_1 = self.data.loc[self.data.index[i], 'MACD_histogram']
+            if (diff_0 < 0) and (diff_1 > 0):    # when shorter > longer happens
+                self.data.loc[self.data.index[i], 'MACD_cross'] = 1
+            elif (diff_0 > 0) and (diff_1 < 0):
+                self.data.loc[self.data.index[i], 'MACD_cross'] = -1
+        self.indicator_columns.append('MACD_cross')
+        return
+
+    def add_RSI(self, rsi_period=14):
+        self.rsi_period = rsi_period
+        label_stem = 'RSI' + str(rsi_period) +'_'
+        self.data[label_stem + 'change'] = \
+            self.data['close'] - self.data['close'].shift(1)
+        self.data[label_stem + 'ave_gain'] = 0
+        self.data[label_stem + 'ave_loss'] = 0
+
+        counter = rsi_period - 1
+        first_subset = self.data.iloc[:rsi_period]
+        inc = first_subset[label_stem + 'change'] >= 0
+        dec = first_subset[label_stem + 'change'] < 0
+        ind = self.data.index[counter]
+        self.data.loc[ind, label_stem + 'ave_gain'] = \
+                first_subset[label_stem + 'change'][inc].sum() / rsi_period
+        self.data.loc[ind, label_stem + 'ave_loss'] = \
+                (-1)*first_subset[label_stem + 'change'][dec].sum() / rsi_period
+        counter += 1
+
+        while counter < len(self.data):
+            subset = self.data.iloc[(counter-rsi_period + 1):counter+1]
+            ind = self.data.index[counter]
+
+            if self.data.iloc[counter][label_stem + 'change'] >=0:
+                current_gain = self.data.iloc[counter][label_stem + 'change']
+                current_loss = 0
+            else:
+                current_gain = 0
+                current_loss = (-1)*self.data.iloc[counter][label_stem + 'change']
+            previous_ave_gain = self.data.iloc[counter-1][label_stem + 'ave_gain']
+            previous_ave_loss = self.data.iloc[counter-1][label_stem + 'ave_loss']
+
+            self.data.loc[ind, label_stem + 'ave_gain'] = \
+                (previous_ave_gain * (rsi_period -1) + current_gain)/rsi_period
+            self.data.loc[ind, label_stem + 'ave_loss'] = \
+                (previous_ave_loss * (rsi_period -1) + current_loss)/rsi_period
+
+            counter += 1
+
+        def calculate_RSI(RS):
+            RSI = 100 - (100 / (1 + RS))
+            return RSI
+
+        self.data['RS'] = self.data[label_stem + 'ave_gain'] / self.data[label_stem + 'ave_loss']
+        self.data['RSI']  = self.data['RS'].apply(calculate_RSI)
+
+
+
+
+
+
+
+
+
+    def whatever(self):
+        pass

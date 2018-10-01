@@ -33,8 +33,8 @@ def panel_return_scatter(data):
     p.background_fill_color = 'aliceblue'
     p.background_fill_alpha = 0.4
 
-    p_hist_top = figure(plot_width=600, plot_height=100)
-    p_hist_right = figure(plot_width=100, plot_height=600)
+    p_hist_top = figure(plot_width=600, plot_height=150)
+    p_hist_right = figure(plot_width=150, plot_height=600)
 
     def update_data():
         period = selector_period.value
@@ -52,12 +52,12 @@ def panel_return_scatter(data):
 
     def draw(source):
         # update_axes(p)
-        # bins = 20
+        
 
         mapper = LinearColorMapper(
             palette=all_palettes['RdBu'][len(source.data)], 
-            low=-2.5,#np.nanmin(source.data['return']), 
-            high=2.5#np.nanmax(source.data['return'])
+            low=-2.5,   #np.nanmin(source.data['return']), 
+            high=2.5    #np.nanmax(source.data['return'])
         )
 
         p.circle(
@@ -73,9 +73,6 @@ def panel_return_scatter(data):
         color_bar = ColorBar(color_mapper=mapper, location=(0, 0))
         p.add_layout(color_bar, 'right')
 
-        # x_his, x_edges = np.histogram(source.data['x'], bins=bins)
-        # y_his, y_edges = np.histogram(source.data['y'], bins=bins)
-        
 
         return column(p_hist_top, row(p, p_hist_right))
 
@@ -85,6 +82,20 @@ def panel_return_scatter(data):
 
         p.xaxis.axis_label = selector_xmetric.value
         p.yaxis.axis_label = selector_ymetric.value
+
+        bins = 40
+        x_hist, x_edges = np.histogram(source.data['x'], bins=bins)
+        y_hist, y_edges = np.histogram(source.data['y'], bins=bins)
+        
+        p_hist_top.quad(
+            bottom=0, top=x_hist, 
+            left=x_edges[:-1], right=x_edges[1:]
+        )
+        
+        p_hist_right.quad(
+            bottom=y_edges[1:], top=y_edges[:-1], 
+            left=0, right=y_hist
+        )
 
     selector_period = create_widget(widget_settings['return_period'])
     selector_xmetric = create_widget(widget_settings['xmetric'])
@@ -103,8 +114,6 @@ def panel_return_scatter(data):
         selector_period,
         selector_xmetric,
         selector_ymetric,
-        selector_xrange,
-        selector_yrange,
         width=350
     )
 

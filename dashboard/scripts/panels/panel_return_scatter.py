@@ -15,8 +15,8 @@ with open('dashboard/scripts/json/widgets.json') as json_widgets:
     widget_settings = widget_settings['panel_return_scatter']
 
 settings_figure = {
-    'plot_width': 600, 
-    'plot_height': 600, 
+    'plot_width': 300, 
+    'plot_height': 300, 
     'title': 'Test Hitogram',
     'x_axis_label': 'Return (%)', 
     'y_axis_label': 'Proportion'
@@ -33,8 +33,8 @@ def panel_return_scatter(data):
     p.background_fill_color = 'aliceblue'
     p.background_fill_alpha = 0.4
 
-    p_hist_top = figure(plot_width=600, plot_height=150)
-    p_hist_right = figure(plot_width=150, plot_height=600)
+    p_hist_top = figure(plot_width=settings_figure['plot_width'], plot_height=150)
+    p_hist_right = figure(plot_width=150, plot_height=settings_figure['plot_width'])
 
     def update_data():
         period = selector_period.value
@@ -80,12 +80,14 @@ def panel_return_scatter(data):
         source_updated = update_data()
         source.data = source_updated.data
 
-        p.xaxis.axis_label = selector_xmetric.value
-        p.yaxis.axis_label = selector_ymetric.value
+        xname = selector_xmetric.value
+        yname = selector_ymetric.value
+        p.xaxis.axis_label = xname
+        p.yaxis.axis_label = yname
 
         bins = 40
-        x_hist, x_edges = np.histogram(source.data['x'], bins=bins)
-        y_hist, y_edges = np.histogram(source.data['y'], bins=bins)
+        x_hist, x_edges = np.histogram(data[xname].dropna(), bins=bins)
+        y_hist, y_edges = np.histogram(data[yname].dropna(), bins=bins)
         
         p_hist_top.quad(
             bottom=0, top=x_hist, 

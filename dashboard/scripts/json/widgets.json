@@ -50,7 +50,7 @@
             }
         }
     },
-    "panel_return_scatter": {
+    "panel_metrics_scatter": {
         "return_period": {
             "type": "Slider",
             "specs": {

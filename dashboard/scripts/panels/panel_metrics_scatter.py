@@ -12,7 +12,7 @@ from dashboard.scripts.utility import Slice, calculate_percent_return
 
 with open('dashboard/scripts/json/widgets.json') as json_widgets:
     widget_settings = json.load(json_widgets)
-    widget_settings = widget_settings['panel_return_scatter']
+    widget_settings = widget_settings['panel_metrics_scatter']
 
 settings_figure = {
     'plot_width': 450, 
@@ -22,7 +22,7 @@ settings_figure = {
     'y_axis_label': 'Proportion'
 }
 
-def panel_return_scatter(data):
+def panel_metrics_scatter(data):
 
     ### Create a figure ###
     p = figure(

@@ -5,7 +5,7 @@ import numpy as np
 from bokeh.io import curdoc
 from bokeh.models.widgets import Tabs
 from dashboard.scripts.panels.panel_return_histogram import panel_return_histogram
-from dashboard.scripts.panels.panel_return_scatter import panel_return_scatter
+from dashboard.scripts.panels.panel_metrics_scatter import panel_metrics_scatter
 from dashboard.scripts.utility import (
     create_random_quartile, check_data_format, create_test_data)
 
@@ -15,7 +15,7 @@ test_data['time'] = pd.to_datetime(test_data['time'], infer_datetime_format=True
 
 ### Create tabs ###
 tab1 = panel_return_histogram(test_data)
-tab2 = panel_return_scatter(test_data)
+tab2 = panel_metrics_scatter(test_data)
 
 ### Put together tabs ###
 tabs = Tabs(tabs=[tab1, tab2])

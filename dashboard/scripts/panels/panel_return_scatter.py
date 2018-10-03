@@ -15,89 +15,108 @@ with open('dashboard/scripts/json/widgets.json') as json_widgets:
     widget_settings = widget_settings['panel_return_scatter']
 
 settings_figure = {
-    'plot_width': 300, 
-    'plot_height': 300, 
+    'plot_width': 450, 
+    'plot_height': 500, 
     'title': 'Test Hitogram',
     'x_axis_label': 'Return (%)', 
     'y_axis_label': 'Proportion'
 }
 
 def panel_return_scatter(data):
+    bins = 40
+
     ### Create a figure ###
     p = figure(
         plot_width=settings_figure['plot_width'], 
         plot_height=settings_figure['plot_height'], 
         title=settings_figure['title'],
-        toolbar_location="below"
+        toolbar_location="below",
+        toolbar_sticky=False
     )
     p.background_fill_color = 'aliceblue'
     p.background_fill_alpha = 0.4
 
-    p_hist_top = figure(plot_width=settings_figure['plot_width'], plot_height=150)
-    p_hist_right = figure(plot_width=150, plot_height=settings_figure['plot_width'])
+    p_hist_top = figure(
+        toolbar_location=None,
+        plot_width=settings_figure['plot_width'], 
+        plot_height=150
+    )
+    p_hist_right = figure(
+        toolbar_location=None,
+        plot_width=150, 
+        plot_height=settings_figure['plot_height'])
 
-    def update_data():
-        period = selector_period.value
-        data['return'] = calculate_percent_return(data['close'], period)
-        
-        df = pd.DataFrame(
-            {
-                'x':data[selector_xmetric.value],
-                'y':data[selector_ymetric.value],
-                'return': data['return']
-            }
-        )
+    source_main = ColumnDataSource(
+        {
+            'x': data['MACD'],
+            'y': data['MACD'],
+            'return': calculate_percent_return(data['close'], 1)
+        }
+    )
 
-        return ColumnDataSource(df.dropna())
+    x_hist, x_edges = np.histogram(data['MACD'].dropna(), bins=bins)
+    y_hist, y_edges = np.histogram(data['MACD'].dropna(), bins=bins)
+    source_hist = ColumnDataSource(
+        {
+            'x_hist': x_hist,
+            'y_hist': y_hist,
+            'x_edges': x_edges[:-1],
+            'y_edges': y_edges[1:]
+        }
+    )
 
-    def draw(source):
-        # update_axes(p)
-        
-
-        mapper = LinearColorMapper(
-            palette=all_palettes['RdBu'][len(source.data)], 
+    mapper = LinearColorMapper(
+            palette=all_palettes['RdBu'][len(source_main.data)], 
             low=-2.5,   #np.nanmin(source.data['return']), 
             high=2.5    #np.nanmax(source.data['return'])
-        )
+    )
 
-        p.circle(
-            source=source, 
-            x='x', 
-            y='y',
-            color={'field': 'return', 'transform': mapper},
-            fill_alpha=0.3,
-            line_alpha=0.4,
-            size=8,
-            hover_fill_alpha=1.0
-        )
-        color_bar = ColorBar(color_mapper=mapper, location=(0, 0))
-        p.add_layout(color_bar, 'right')
+    p.circle(
+        source=source_main, 
+        x='x', 
+        y='y',
+        color={'field': 'return', 'transform': mapper},
+        fill_alpha=0.3,
+        line_alpha=0.4,
+        size=8,
+        hover_fill_alpha=1.0
+    )
+    p_hist_top.quad(
+        source=source_hist,
+        bottom=0, top='x_hist', 
+        left='x_edges', right='x_edges'
+    )
+    p_hist_right.quad(
+        source=source_hist,
+        bottom='y_edges', top='y_edges', 
+        left=0, right='y_hist'
+    )
 
-
-        return column(p_hist_top, row(p, p_hist_right))
+    p_column = column(p_hist_top, row(p, p_hist_right))
 
     def update():
-        source_updated = update_data()
-        source.data = source_updated.data
+        period = selector_period.value
+        data_return = calculate_percent_return(data['close'], period)
+        nonnull_index = data_return.notnull()
 
-        xname = selector_xmetric.value
-        yname = selector_ymetric.value
-        p.xaxis.axis_label = xname
-        p.yaxis.axis_label = yname
+        xdata = data[selector_xmetric.value]
+        ydata = data[selector_ymetric.value]
+        
+        source_main.data = {
+                'x':xdata[nonnull_index],
+                'y':ydata[nonnull_index],
+                'return': data_return[nonnull_index]
+        }
 
-        bins = 40
-        x_hist, x_edges = np.histogram(data[xname].dropna(), bins=bins)
-        y_hist, y_edges = np.histogram(data[yname].dropna(), bins=bins)
-        
-        p_hist_top.quad(
-            bottom=0, top=x_hist, 
-            left=x_edges[:-1], right=x_edges[1:]
-        )
-        
-        p_hist_right.quad(
-            bottom=y_edges[1:], top=y_edges[:-1], 
-            left=0, right=y_hist
-        )
+        x_hist, x_edges = np.histogram(xdata.dropna(), bins=bins, density=True)
+        y_hist, y_edges = np.histogram(ydata.dropna(), bins=bins, density=True)
+        source_hist.data = {
+            'x_hist': x_hist,
+            'y_hist': y_hist,
+            'x_edges': x_edges[:-1],
+            'y_edges': y_edges[1:]
+        }
+        return
 
     selector_period = create_widget(widget_settings['return_period'])
     selector_xmetric = create_widget(widget_settings['xmetric'])
@@ -106,9 +125,6 @@ def panel_return_scatter(data):
     selector_period.on_change('value', lambda attr, old, new: update())
     selector_xmetric.on_change('value', lambda attr, old, new: update())
     selector_ymetric.on_change('value', lambda attr, old, new: update())
-
-    source = update_data()
-    p_column = draw(source)
 
     ### Setting up the laytou ###
     # Widgets

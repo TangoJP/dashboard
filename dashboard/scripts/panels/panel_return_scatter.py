@@ -23,7 +23,6 @@ settings_figure = {
 }
 
 def panel_return_scatter(data):
-    bins = 40
 
     ### Create a figure ###
     p = figure(
@@ -54,8 +53,8 @@ def panel_return_scatter(data):
         }
     )
 
-    x_hist, x_edges = np.histogram(data['MACD'].dropna(), bins=bins)
-    y_hist, y_edges = np.histogram(data['MACD'].dropna(), bins=bins)
+    x_hist, x_edges = np.histogram(data['MACD'].dropna(), bins=50)
+    y_hist, y_edges = np.histogram(data['MACD'].dropna(), bins=50)
     source_hist = ColumnDataSource(
         {
             'x_hist': x_hist,
@@ -97,15 +96,15 @@ def panel_return_scatter(data):
     def update():
         period = selector_period.value
         data_return = calculate_percent_return(data['close'], period)
-        nonnull_index = data_return.notnull()
+        bins = selector_bins.value
 
         xdata = data[selector_xmetric.value]
         ydata = data[selector_ymetric.value]
         
         source_main.data = {
-                'x':xdata[nonnull_index],
-                'y':ydata[nonnull_index],
-                'return': data_return[nonnull_index]
+                'x':xdata,
+                'y':ydata,
+                'return': data_return
         }
 
         x_hist, x_edges = np.histogram(xdata.dropna(), bins=bins, density=True)
@@ -121,10 +120,12 @@ def panel_return_scatter(data):
     selector_period = create_widget(widget_settings['return_period'])
     selector_xmetric = create_widget(widget_settings['xmetric'])
     selector_ymetric = create_widget(widget_settings['ymetric'])
+    selector_bins = create_widget(widget_settings['bins'])
 
     selector_period.on_change('value', lambda attr, old, new: update())
     selector_xmetric.on_change('value', lambda attr, old, new: update())
     selector_ymetric.on_change('value', lambda attr, old, new: update())
+    selector_bins.on_change('value', lambda attr, old, new: update())
 
     ### Setting up the laytou ###
     # Widgets
@@ -132,6 +133,7 @@ def panel_return_scatter(data):
         selector_period,
         selector_xmetric,
         selector_ymetric,
+        selector_bins,
         width=350
     )
 

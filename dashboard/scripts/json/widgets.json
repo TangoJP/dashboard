@@ -91,6 +91,16 @@
                 ]
             }
         },
+        "bins": {
+            "type": "Slider",
+            "specs": {
+                "title": "bins",
+                "start": 5,
+                "end": 100,
+                "step": 5,
+                "value": 50
+            }
+        },
         "xrange": {
             "type": "RangeSlider",
             "specs": {

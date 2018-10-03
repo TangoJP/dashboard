@@ -9,7 +9,7 @@ from dashboard.scripts.panels.panel_return_scatter import panel_return_scatter
 from dashboard.scripts.utility import (
     create_random_quartile, check_data_format, create_test_data)
 
-TEST_DATAPATH = 'dashboard/data/test_day.csv'
+TEST_DATAPATH = 'dashboard/data/test_hour.csv'
 test_data = pd.read_csv(TEST_DATAPATH)
 test_data['time'] = pd.to_datetime(test_data['time'], infer_datetime_format=True)
 

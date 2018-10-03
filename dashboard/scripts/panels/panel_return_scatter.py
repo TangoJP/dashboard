@@ -53,8 +53,8 @@ def panel_return_scatter(data):
         }
     )
 
-    x_hist, x_edges = np.histogram(data['MACD'].dropna(), bins=50)
-    y_hist, y_edges = np.histogram(data['MACD'].dropna(), bins=50)
+    x_hist, x_edges = np.histogram(data['SMA_Deviation_Sigma'].dropna(), bins=100)
+    y_hist, y_edges = np.histogram(data['MACD_signal'].dropna(), bins=100)
     source_hist = ColumnDataSource(
         {
             'x_hist': x_hist,
@@ -75,9 +75,9 @@ def panel_return_scatter(data):
         x='x', 
         y='y',
         color={'field': 'return', 'transform': mapper},
-        fill_alpha=0.3,
+        fill_alpha=0.2,
         line_alpha=0.4,
-        size=8,
+        size=3,
         hover_fill_alpha=1.0
     )
     p_hist_top.quad(

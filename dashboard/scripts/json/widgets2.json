@@ -1,0 +1,31 @@
+{
+    "deviation": {
+        "return_period": {
+            "type": "Slider",
+            "specs": {
+                "title": "Return Period",
+                "start": 1,
+                "end": 30,
+                "step": 1,
+                "value": 1
+            }
+        },
+        "sma_period": {
+            "type": "Slider",
+            "specs": {
+                "title": "SMA Period",
+                "start": 1,
+                "end": 30,
+                "step": 1,
+                "value": 1
+            }
+        },
+        "percent": {
+            "type": "RadioButtonGroup",
+            "specs": {
+                "labels": ["False", "True"],
+                "active": 0
+            }
+        }
+    }
+}

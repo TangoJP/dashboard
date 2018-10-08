@@ -171,5 +171,42 @@
                 "value": [-10, 10]
             }
         }
+    },
+    "panel_metrics_return_scatter": {
+        "return_period": {
+            "type": "Slider",
+            "specs": {
+                "title": "Return Period",
+                "start": 1,
+                "end": 30,
+                "step": 1,
+                "value": 1
+            }
+        },
+        "metric": {
+            "type": "Select",
+            "specs": {
+                "title": "Metric",
+                "value": "SMA_Deviation_Sigma",
+                "options": [
+                    "MACD",
+                    "MACD_signal",
+                    "RSI",
+                    "Bollinger20_sigma",
+                    "SMA_Deviation_Sigma",
+                    "SMA_Deviation_Abs"
+                ]
+            }
+        },
+        "bins": {
+            "type": "Slider",
+            "specs": {
+                "title": "bins",
+                "start": 5,
+                "end": 100,
+                "step": 5,
+                "value": 100
+            }
+        }
     }
 }

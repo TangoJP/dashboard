@@ -12,7 +12,7 @@ from dashboard.scripts.utility import Slice, calculate_percent_return
 
 with open('dashboard/scripts/json/widgets.json') as json_widgets:
     widget_settings = json.load(json_widgets)
-    widget_settings = widget_settings['panel_metrics_scatter']
+    widget_settings = widget_settings['panel_metrics_return_scatter']
 
 settings_figure = {
     'plot_width': 450, 
@@ -22,8 +22,7 @@ settings_figure = {
     'y_axis_label': 'Proportion'
 }
 
-def panel_metrics_scatter(data):
-
+def panel_metrics_return_scatter(data):
     ### Create a figure ###
     p = figure(
         plot_width=settings_figure['plot_width'], 
@@ -34,6 +33,8 @@ def panel_metrics_scatter(data):
     )
     p.background_fill_color = 'aliceblue'
     p.background_fill_alpha = 0.4
+    p.xaxis.axis_label = 'SMA_Deviation_Sigma'
+    p.yaxis.axis_label = 'period return'
 
     p_hist_top = figure(
         toolbar_location=None,
@@ -44,17 +45,19 @@ def panel_metrics_scatter(data):
         toolbar_location=None,
         plot_width=150, 
         plot_height=settings_figure['plot_height'])
+    
+    initial_return = calculate_percent_return(data['close'], 1)
 
     source_main = ColumnDataSource(
         {
             'x': data['SMA_Deviation_Sigma'],
-            'y': data['MACD_signal'],
-            'return': calculate_percent_return(data['close'], 1)
+            'y': initial_return
         }
     )
-
+    print(source_main.data)
+    
     x_hist, x_edges = np.histogram(data['SMA_Deviation_Sigma'].dropna(), bins=100)
-    y_hist, y_edges = np.histogram(data['MACD_signal'].dropna(), bins=100)
+    y_hist, y_edges = np.histogram(initial_return.dropna(), bins=100)
     source_hist = ColumnDataSource(
         {
             'x_hist': x_hist,
@@ -64,17 +67,11 @@ def panel_metrics_scatter(data):
         }
     )
 
-    mapper = LinearColorMapper(
-            palette=all_palettes['RdBu'][len(source_main.data)], 
-            low=-2.5,   #np.nanmin(source.data['return']), 
-            high=2.5    #np.nanmax(source.data['return'])
-    )
-
     p.circle(
         source=source_main, 
         x='x', 
         y='y',
-        color={'field': 'return', 'transform': mapper},
+        #color={'field': 'y', 'transform': mapper},
         fill_alpha=0.2,
         line_alpha=0.4,
         size=3,
@@ -95,16 +92,14 @@ def panel_metrics_scatter(data):
 
     def update():
         period = selector_period.value
-        data_return = calculate_percent_return(data['close'], period)
         bins = selector_bins.value
 
-        xdata = data[selector_xmetric.value]
-        ydata = data[selector_ymetric.value]
-        
+        xdata = data[selector_metric.value]
+        ydata = calculate_percent_return(data['close'], period)
+
         source_main.data = {
                 'x':xdata,
-                'y':ydata,
-                'return': data_return
+                'y':ydata
         }
 
         x_hist, x_edges = np.histogram(xdata.dropna(), bins=bins, density=True)
@@ -115,30 +110,29 @@ def panel_metrics_scatter(data):
             'x_edges': x_edges[:-1],
             'y_edges': y_edges[1:]
         }
-        return
 
     selector_period = create_widget(widget_settings['return_period'])
-    selector_xmetric = create_widget(widget_settings['xmetric'])
-    selector_ymetric = create_widget(widget_settings['ymetric'])
+    selector_metric = create_widget(widget_settings['metric'])
     selector_bins = create_widget(widget_settings['bins'])
 
     selector_period.on_change('value', lambda attr, old, new: update())
-    selector_xmetric.on_change('value', lambda attr, old, new: update())
-    selector_ymetric.on_change('value', lambda attr, old, new: update())
+    selector_metric.on_change('value', lambda attr, old, new: update())
     selector_bins.on_change('value', lambda attr, old, new: update())
 
     ### Setting up the laytou ###
     # Widgets
     controlers = WidgetBox(
         selector_period,
-        selector_xmetric,
-        selector_ymetric,
+        selector_metric,
         selector_bins,
         width=350
     )
 
     # Layout
     layout = row(controlers, p_column)
-    panel = Panel(child=layout, title='Return Analysis')
+    panel = Panel(child=layout, title='Metric vs Return')
 
     return panel
+
+
+
